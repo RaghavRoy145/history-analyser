@@ -1,3 +1,5 @@
+prof = input("Enter profile number (0 for default): ")
+
 import sqlite3
 import pandas
 import csv
@@ -21,7 +23,6 @@ def copyHistory(prof="Default"):
         copyfile(str(Path.home())+"/Library/Application Support/Google/Chrome/" + prof + "/History", OutputDirectory()+"Copied_History")
 
 
-prof = input("Enter profile number (0 for default): ")
 if prof != "0":
     copyHistory("Profile "+prof)
 
@@ -125,7 +126,7 @@ bar1_ax = fig.add_subplot(gs[0,2:4])
 bar2_ax = fig.add_subplot(gs[1,2:4])
 
 pie_ax.axis("equal")
-pie_ax.pie(frequency, labels=urls[:10]+["" for x in range(0,len(urls)-10)], labeldistance=1.05, rotatelabels=True)
+pie_ax.pie(frequency, labels=urls[:10]+["" for x in range(0,len(urls)-10)], labeldistance=1, rotatelabels=True)
 
 x_ticks = range(len(urls))
 bar1_ax.bar(x_ticks, frequency)
