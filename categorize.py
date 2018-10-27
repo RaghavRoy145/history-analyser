@@ -9,7 +9,7 @@ def OutputDirectory():
         return "Output/"
 
 df = pandas.read_csv(OutputDirectory() + "url_frequency.csv", names=["url", "frequency"])
-category_urls = pandas.read_csv("url_categories copy.csv", names=["category", "url"])
+category_urls = pandas.read_csv("url_categories_copy.csv", names=["category", "url"])
 categories = pandas.DataFrame(columns=["category", "url"])
 
 for url in df["url"][:-1]:
