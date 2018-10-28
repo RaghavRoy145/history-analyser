@@ -12,16 +12,17 @@ import os
 import calendar
 
 if not os.path.exists("Output"): os.mkdir("Output")
-def OutputDirectory():
-    if sys.platform=="win32":
-        return "Output\\"
-    elif sys.platform=="linux" or sys.platform=="darwin":
-        return "Output/"
+outdir = "Output"
 def copyHistory(prof="Default"):
+    pt = ""
     if sys.platform=="win32":
-        copyfile(str(Path.home())+"\\AppData\\Local\\Google\\Chrome\\User Data\\" + prof + "\\History", OutputDirectory()+"Copied_History")
-    elif sys.platform=="linux" or sys.platform=="darwin":
-        copyfile(str(Path.home())+"/Library/Application Support/Google/Chrome/" + prof + "/History", OutputDirectory()+"Copied_History")
+        pt = os.path.join(Path.home(), "AppData\\Local\\Google\\Chrome\\User Data", prof, "History")
+    elif sys.platform=="linux":
+        pt = os.path.join(Path.home(), ".config/google-chrome", prof, "History")
+    elif sys.platform=="darwin":
+        pt = os.path.join(Path.home(), "Library/Application Support/Google/Chrome/", prof, "History")
+    print(pt)
+    copyfile(pt, os.path.join(outdir, "Copied_History"))
 
 
 if prof != "0":
@@ -30,11 +31,11 @@ if prof != "0":
 else:
     copyHistory()
 
-conn = sqlite3.connect(OutputDirectory()+"Copied_History")
+conn = sqlite3.connect(os.path.join(outdir, "Copied_History"))
 cursor = conn.cursor()
 cursor.execute("SELECT datetime(visits.visit_time/1000000-11644473600, 'unixepoch', 'localtime') as 'visit_time',urls.url from urls,visits WHERE urls.id = visits.url ORDER BY visit_time DESC")
 
-file = OutputDirectory()+"url_visittime.csv"
+file = os.path.join(outdir, "url_visittime.csv")
 
 with open(file, "w", newline='') as csv_file:
         csv_writer = csv.writer(csv_file)
@@ -59,7 +60,7 @@ dataset["url"] = dataset["url"].str.split("/").str[2]    #split url by / and get
 dataset["url"] = dataset["url"].str.replace("www.","")
 url_frequency = dataset.groupby("url").size() #Number of times each website is visited
 url_frequency = url_frequency.sort_values(ascending=False)
-url_frequency.to_csv(OutputDirectory() + "url_frequency.csv")
+url_frequency.to_csv(os.path.join(outdir, "url_frequency.csv"))
 url_frequency = url_frequency[url_frequency > 10]
 
 urls = []
@@ -100,7 +101,7 @@ for date in groupedby_months.keys():
 #pie_chart = fig.add_subplot(211)
 plt.axis('equal')
 plt.pie(frequency, labels=urls[:10]+["" for x in range(0,len(urls)-10)], labeldistance=1.05, rotatelabels=True)
-plt.savefig(OutputDirectory()+"pie_chart.svg")
+plt.savefig(os.path.join(outdir, "pie_chart.svg"))
 #plt.show()
 #bar_graph = fig.add_subplot(212)
 x_ticks = range(len(urls))
@@ -109,7 +110,7 @@ plt.bar(x_ticks, frequency)
 plt.xticks(range(len(urls)), urls, rotation="vertical")
 plt.tight_layout()
 #plt.show()
-plt.savefig(OutputDirectory()+"bar_graph.svg")
+plt.savefig(os.path.join(outdir, "bar_graph.svg"))
 plt.close()"""
 
 """fig, axes = plt.subplots(2,2,figsize=(14,9))
@@ -175,7 +176,7 @@ for rect, label in zip(rects, months):
             ha='center', va='bottom', fontsize="small")
 
 
-#plt.tight_layout()
-plt.savefig(OutputDirectory()+"Graphs.pdf", format="pdf")
+plt.tight_layout()
+plt.savefig(os.path.join(outdir, "Graphs.pdf"), format="pdf")
 plt.show()
 plt.close()
