@@ -9,6 +9,7 @@ from shutil import copyfile
 from pathlib import Path
 import sys
 import os
+import calendar
 
 if not os.path.exists("Output"): os.mkdir("Output")
 def OutputDirectory():
@@ -43,6 +44,7 @@ with open(file, "w", newline='') as csv_file:
 dataset = pandas.read_csv(file)
 #dataset["visit_time"] = dataset["visit_time"].apply(lambda x: str(x[:7])) #To get only year and month in date
 #print(dataset.groupby("visit_time").size()) #Number of sites visited in each month
+dataset_copy = dataset.copy()
 dataset["visit_time"] = dataset["visit_time"].apply(lambda x: str(x[11:13]))
 dataset = dataset.sort_values(ascending=False, by="visit_time")
 times_frequency = dataset.groupby("visit_time").size()
@@ -85,6 +87,15 @@ def time_24hours_to_12hours(time_24):
     return time_12
 times_only_12hours = list(map(time_24hours_to_12hours, times_only))
 
+
+dataset_copy["visit_time"] = dataset_copy["visit_time"].apply(lambda x: str(x[:7])) #To get only year and month in date
+groupedby_months = dataset_copy.groupby("visit_time").size()
+month_years = []
+number_of_sites_visited_in_months = []
+for date in groupedby_months.keys():
+    month_years.append(date)
+    number_of_sites_visited_in_months.append(groupedby_months[date])
+
 """plt.figure(figsize=(8,8))
 #pie_chart = fig.add_subplot(211)
 plt.axis('equal')
@@ -120,10 +131,15 @@ fig.tight_layout()
 plt.show()"""
 
 fig = plt.figure(figsize=(16,9))
-gs = fig.add_gridspec(ncols = 4, nrows = 2)
+"""gs = fig.add_gridspec(ncols = 4, nrows = 2)
 pie_ax = fig.add_subplot(gs[0:2,0:2])
 bar1_ax = fig.add_subplot(gs[0,2:4])
-bar2_ax = fig.add_subplot(gs[1,2:4])
+bar2_ax = fig.add_subplot(gs[1,2:4])"""
+gs = fig.add_gridspec(ncols = 3, nrows = 2)
+pie_ax = fig.add_subplot(gs[0,0])
+bar3_ax = fig.add_subplot(gs[1,0])
+bar1_ax = fig.add_subplot(gs[0,1:3])
+bar2_ax = fig.add_subplot(gs[1,1:3])
 
 pie_ax.axis("equal")
 pie_ax.pie(frequency, labels=urls[:10]+["" for x in range(0,len(urls)-10)], labeldistance=1, rotatelabels=True)
@@ -131,13 +147,35 @@ pie_ax.pie(frequency, labels=urls[:10]+["" for x in range(0,len(urls)-10)], labe
 x_ticks = range(len(urls))
 bar1_ax.bar(x_ticks, frequency)
 plt.sca(bar1_ax)
-plt.xticks(range(len(urls)), urls, rotation="vertical", fontsize=5)
+plt.xticks(x_ticks, [], rotation="vertical", fontsize=5)
+rects = bar1_ax.patches
+for rect, label in zip(rects, urls):
+    bar1_ax.text(rect.get_x() + rect.get_width() / 2, 5, label,
+            ha='center', va='bottom', fontsize=5, rotation="vertical")
 
 bar2_ax.bar(times_only, frequency_of_times)
 plt.sca(bar2_ax)
-plt.xticks(times_only, times_only_12hours, rotation="vertical")
+plt.xticks(times_only, [], rotation="vertical")
+rects = bar2_ax.patches
+for rect, label in zip(rects, times_only_12hours):
+    height = rect.get_height()
+    bar2_ax.text(rect.get_x() + rect.get_width() / 2, height + 5, label,
+            ha='center', va='bottom', fontsize="x-small")
+bar2_ax.set_xlabel("Time")
 
-plt.tight_layout()
+x_ticks = range(len(groupedby_months))
+bar3_ax.bar(x_ticks, number_of_sites_visited_in_months)
+plt.sca(bar3_ax)
+plt.xticks(x_ticks, month_years, rotation="vertical")
+rects = bar3_ax.patches
+months = [x[:4]+"\n"+calendar.month_name[int(x[5:])] for x in month_years]
+for rect, label in zip(rects, months):
+    height = rect.get_height()
+    bar3_ax.text(rect.get_x() + rect.get_width() / 2, height/2 - height/10, label,
+            ha='center', va='bottom', fontsize="small")
+
+
+#plt.tight_layout()
 plt.savefig(OutputDirectory()+"Graphs.pdf", format="pdf")
 plt.show()
 plt.close()
