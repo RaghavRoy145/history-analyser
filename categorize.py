@@ -2,17 +2,24 @@ from pandas import read_csv, DataFrame, concat, Series
 from os import path
 import matplotlib.pyplot as plt
 from time import time
+start_total = time()
 
 df = read_csv(path.join("Output", "url_frequency.csv"), names=["url", "frequency"])
 category_urls = read_csv("url_categories_copy.csv", names=["category", "url"])
-categories = DataFrame(columns=["category", "url"])
+#categories = DataFrame(columns=["category", "url"])
 
+categories_only = []
+urls_only = []
 start = time()
 for url in df["url"][:-1]:
     c = category_urls[category_urls["url"] == url] #.str.contains(str(url))]
-    if not c.empty and len(str(url)) > 5:
-        categories = concat([categories, c])
-print("Time to concat:", time()-start)
+    if not c.empty:# and len(str(url)) > 5:
+        categories_only.append(c["category"].iloc[0])
+        urls_only.append(c["url"].iloc[0])
+        #categories = concat([categories, c])
+categories = DataFrame({"category": categories_only, "url": urls_only})
+print(categories)
+print("Time to concat:", round(time()-start, 2))
 
 start = time()
 #print(categories)
@@ -25,7 +32,7 @@ categories["frequency"] = frequencies
 
 category_frequency = (categories.groupby("category")["frequency"].sum())
 #print((category_frequency))
-print("Time to categorize:", time()-start)
+print("Time to categorize:", round(time()-start, 2))
 
 start = time()
 categories = []
@@ -36,7 +43,7 @@ for i in category_frequency.keys():
     frequencies.append(category_frequency[i])
 frequency_total = sum(frequencies)
 frequency_percentages = [(x/frequency_total)*100 for x in frequencies]
-print("Time to get categories, frequency and percentages:", time()-start)
+print("Time to get categories, frequency and percentages:", round(time()-start, 2))
 
 x = range(0, len(categories))
 
@@ -54,7 +61,8 @@ for rect, label in zip(rects, frequency_percentages):
             ha='center', va='bottom')
 plt.tight_layout()
 plt.savefig(path.join("Output", "Category_Graphs.pdf"), format="pdf")
-print("Time to plot:", time()-start)
+print("Time to plot:", round(time()-start, 2))
+print("Total time taken:", round(time()-start_total, 3))
 plt.show()
 plt.close()
 

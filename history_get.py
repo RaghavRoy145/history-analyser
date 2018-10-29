@@ -1,6 +1,7 @@
 prof = input("Enter profile number (0 for default): ")
 
 from time import perf_counter as time
+start_total = time()
 start = time()
 from sqlite3 import connect
 from pandas import read_csv
@@ -187,6 +188,7 @@ plt.tight_layout()
 plt.savefig(path.join(outdir, "Graphs.pdf"), format="pdf")
 
 print("Time to plot:", round(time()-start, 2))
+print("Total Time taken:", round(time()-start_total, 3))
 
 plt.show()
 plt.close()
