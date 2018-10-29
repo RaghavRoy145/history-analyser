@@ -1,28 +1,27 @@
 prof = input("Enter profile number (0 for default): ")
 
-import sqlite3
-import pandas
-import csv
-import datetime
+from sqlite3 import connect
+from pandas import read_csv
+from csv import writer
 import matplotlib.pyplot as plt
 from shutil import copyfile
 from pathlib import Path
-import sys
-import os
-import calendar
+from sys import platform
+from os import path
+from calendar import month_name
 
-if not os.path.exists("Output"): os.mkdir("Output")
+if not path.exists("Output"): os.mkdir("Output")
 outdir = "Output"
 def copyHistory(prof="Default"):
     pt = ""
-    if sys.platform=="win32":
-        pt = os.path.join(Path.home(), "AppData\\Local\\Google\\Chrome\\User Data", prof, "History")
-    elif sys.platform=="linux":
-        pt = os.path.join(Path.home(), ".config/google-chrome", prof, "History")
-    elif sys.platform=="darwin":
-        pt = os.path.join(Path.home(), "Library/Application Support/Google/Chrome/", prof, "History")
+    if platform=="win32":
+        pt = path.join(Path.home(), "AppData\\Local\\Google\\Chrome\\User Data", prof, "History")
+    elif platform=="linux":
+        pt = path.join(Path.home(), ".config/google-chrome", prof, "History")
+    elif platform=="darwin":
+        pt = path.join(Path.home(), "Library/Application Support/Google/Chrome/", prof, "History")
     print(pt)
-    copyfile(pt, os.path.join(outdir, "Copied_History"))
+    copyfile(pt, path.join(outdir, "Copied_History"))
 
 
 if prof != "0":
@@ -31,18 +30,18 @@ if prof != "0":
 else:
     copyHistory()
 
-conn = sqlite3.connect(os.path.join(outdir, "Copied_History"))
+conn = connect(path.join(outdir, "Copied_History"))
 cursor = conn.cursor()
 cursor.execute("SELECT datetime(visits.visit_time/1000000-11644473600, 'unixepoch', 'localtime') as 'visit_time',urls.url from urls,visits WHERE urls.id = visits.url ORDER BY visit_time DESC")
 
-file = os.path.join(outdir, "url_visittime.csv")
+file = path.join(outdir, "url_visittime.csv")
 
 with open(file, "w", newline='') as csv_file:
-        csv_writer = csv.writer(csv_file)
+        csv_writer = writer(csv_file)
         csv_writer.writerow([i[0] for i in cursor.description])
         csv_writer.writerows(cursor)
 
-dataset = pandas.read_csv(file)
+dataset = read_csv(file)
 #dataset["visit_time"] = dataset["visit_time"].apply(lambda x: str(x[:7])) #To get only year and month in date
 #print(dataset.groupby("visit_time").size()) #Number of sites visited in each month
 dataset_copy = dataset.copy()
@@ -60,7 +59,7 @@ dataset["url"] = dataset["url"].str.split("/").str[2]    #split url by / and get
 dataset["url"] = dataset["url"].str.replace("www.","")
 url_frequency = dataset.groupby("url").size() #Number of times each website is visited
 url_frequency = url_frequency.sort_values(ascending=False)
-url_frequency.to_csv(os.path.join(outdir, "url_frequency.csv"))
+url_frequency.to_csv(path.join(outdir, "url_frequency.csv"))
 url_frequency = url_frequency[url_frequency > 10]
 
 urls = []
@@ -101,7 +100,7 @@ for date in groupedby_months.keys():
 #pie_chart = fig.add_subplot(211)
 plt.axis('equal')
 plt.pie(frequency, labels=urls[:10]+["" for x in range(0,len(urls)-10)], labeldistance=1.05, rotatelabels=True)
-plt.savefig(os.path.join(outdir, "pie_chart.svg"))
+plt.savefig(path.join(outdir, "pie_chart.svg"))
 #plt.show()
 #bar_graph = fig.add_subplot(212)
 x_ticks = range(len(urls))
@@ -110,7 +109,7 @@ plt.bar(x_ticks, frequency)
 plt.xticks(range(len(urls)), urls, rotation="vertical")
 plt.tight_layout()
 #plt.show()
-plt.savefig(os.path.join(outdir, "bar_graph.svg"))
+plt.savefig(path.join(outdir, "bar_graph.svg"))
 plt.close()"""
 
 """fig, axes = plt.subplots(2,2,figsize=(14,9))
@@ -169,7 +168,7 @@ bar3_ax.bar(x_ticks, number_of_sites_visited_in_months)
 plt.sca(bar3_ax)
 plt.xticks(x_ticks, month_years, rotation="vertical")
 rects = bar3_ax.patches
-months = [x[:4]+"\n"+calendar.month_name[int(x[5:])] for x in month_years]
+months = [x[:4]+"\n"+month_name[int(x[5:])] for x in month_years]
 for rect, label in zip(rects, months):
     height = rect.get_height()
     bar3_ax.text(rect.get_x() + rect.get_width() / 2, height/2 - height/10, label,
@@ -177,6 +176,6 @@ for rect, label in zip(rects, months):
 
 
 plt.tight_layout()
-plt.savefig(os.path.join(outdir, "Graphs.pdf"), format="pdf")
+plt.savefig(path.join(outdir, "Graphs.pdf"), format="pdf")
 plt.show()
 plt.close()
