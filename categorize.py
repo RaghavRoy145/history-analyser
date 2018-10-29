@@ -1,24 +1,18 @@
-import pandas
-import sys
+from pandas import read_csv, DataFrame, concat, Series
+from os import path
 import matplotlib.pyplot as plt
 
-def OutputDirectory():
-    if sys.platform=="win32":
-        return "Output\\"
-    elif sys.platform=="linux" or sys.platform=="darwin":
-        return "Output/"
-
-df = pandas.read_csv(OutputDirectory() + "url_frequency.csv", names=["url", "frequency"])
-category_urls = pandas.read_csv("url_categories_copy.csv", names=["category", "url"])
-categories = pandas.DataFrame(columns=["category", "url"])
+df = read_csv(path.join("Output", "url_frequency.csv"), names=["url", "frequency"])
+category_urls = read_csv("url_categories_copy.csv", names=["category", "url"])
+categories = DataFrame(columns=["category", "url"])
 
 for url in df["url"][:-1]:
     c = category_urls[category_urls["url"] == url] #.str.contains(str(url))]
     if not c.empty and len(str(url)) > 5:
-        categories = pandas.concat([categories, c])
+        categories = concat([categories, c])
 #print(categories)
-categories["frequency"] = pandas.Series()
-frequencies = pandas.DataFrame()
+categories["frequency"] = Series()
+frequencies = DataFrame()
 #categories["frequency"]
 #print(int(df.loc["stackoverflow.com" == df["url"], ["frequency"]]["frequency"]))
 frequencies = categories.apply(lambda x: int(df.loc[x["url"] == df["url"], ["frequency"]]["frequency"]), axis=1)
@@ -29,16 +23,28 @@ print((category_frequency))
 
 categories = []
 frequencies = []
+frequency_percentages = []
 for i in category_frequency.keys():
     categories.append(i)
     frequencies.append(category_frequency[i])
+frequency_total = sum(frequencies)
+frequency_percentages = [(x/frequency_total)*100 for x in frequencies]
 
 x = range(0, len(categories))
 
-plt.bar(x, frequencies)
+fig = plt.figure()
+gs = fig.add_gridspec(ncols = 1, nrows = 1)
+bar_ax = fig.add_subplot(gs[0,0])
+bar_ax.bar(x, frequency_percentages)
+plt.sca(bar_ax)
 plt.xticks(x, categories, rotation="vertical")
+rects = bar_ax.patches
+for rect, label in zip(rects, frequency_percentages):
+    label = str(int(round(label))) + "%"
+    bar_ax.text(rect.get_x() + rect.get_width() / 2, rect.get_height(), label,
+            ha='center', va='bottom')
 plt.tight_layout()
-plt.savefig(OutputDirectory()+"Category_Graphs.pdf", format="pdf")
+plt.savefig(path.join("Output", "Category_Graphs.pdf"), format="pdf")
 plt.show()
 plt.close()
 
