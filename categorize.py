@@ -1,15 +1,20 @@
 from pandas import read_csv, DataFrame, concat, Series
 from os import path
 import matplotlib.pyplot as plt
+from time import time
 
 df = read_csv(path.join("Output", "url_frequency.csv"), names=["url", "frequency"])
 category_urls = read_csv("url_categories_copy.csv", names=["category", "url"])
 categories = DataFrame(columns=["category", "url"])
 
+start = time()
 for url in df["url"][:-1]:
     c = category_urls[category_urls["url"] == url] #.str.contains(str(url))]
     if not c.empty and len(str(url)) > 5:
         categories = concat([categories, c])
+print("Time to concat:", time()-start)
+
+start = time()
 #print(categories)
 categories["frequency"] = Series()
 frequencies = DataFrame()
@@ -19,8 +24,10 @@ frequencies = categories.apply(lambda x: int(df.loc[x["url"] == df["url"], ["fre
 categories["frequency"] = frequencies
 
 category_frequency = (categories.groupby("category")["frequency"].sum())
-print((category_frequency))
+#print((category_frequency))
+print("Time to categorize:", time()-start)
 
+start = time()
 categories = []
 frequencies = []
 frequency_percentages = []
@@ -29,9 +36,11 @@ for i in category_frequency.keys():
     frequencies.append(category_frequency[i])
 frequency_total = sum(frequencies)
 frequency_percentages = [(x/frequency_total)*100 for x in frequencies]
+print("Time to get categories, frequency and percentages:", time()-start)
 
 x = range(0, len(categories))
 
+start = time()
 fig = plt.figure()
 gs = fig.add_gridspec(ncols = 1, nrows = 1)
 bar_ax = fig.add_subplot(gs[0,0])
@@ -45,6 +54,7 @@ for rect, label in zip(rects, frequency_percentages):
             ha='center', va='bottom')
 plt.tight_layout()
 plt.savefig(path.join("Output", "Category_Graphs.pdf"), format="pdf")
+print("Time to plot:", time()-start)
 plt.show()
 plt.close()
 

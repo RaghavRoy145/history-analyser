@@ -1,5 +1,7 @@
 prof = input("Enter profile number (0 for default): ")
 
+from time import perf_counter as time
+start = time()
 from sqlite3 import connect
 from pandas import read_csv
 from csv import writer
@@ -9,7 +11,9 @@ from pathlib import Path
 from sys import platform
 from os import path
 from calendar import month_name
+print("Time to import:", round(time()-start, 2))
 
+start = time()
 if not path.exists("Output"): os.mkdir("Output")
 outdir = "Output"
 def copyHistory(prof="Default"):
@@ -20,16 +24,14 @@ def copyHistory(prof="Default"):
         pt = path.join(Path.home(), ".config/google-chrome", prof, "History")
     elif platform=="darwin":
         pt = path.join(Path.home(), "Library/Application Support/Google/Chrome/", prof, "History")
-    print(pt)
     copyfile(pt, path.join(outdir, "Copied_History"))
-
-
 if prof != "0":
     copyHistory("Profile "+prof)
-
 else:
     copyHistory()
+print("Time to copy history:", round(time()-start, 2))
 
+start = time()
 conn = connect(path.join(outdir, "Copied_History"))
 cursor = conn.cursor()
 cursor.execute("SELECT datetime(visits.visit_time/1000000-11644473600, 'unixepoch', 'localtime') as 'visit_time',urls.url from urls,visits WHERE urls.id = visits.url ORDER BY visit_time DESC")
@@ -40,7 +42,9 @@ with open(file, "w", newline='') as csv_file:
         csv_writer = writer(csv_file)
         csv_writer.writerow([i[0] for i in cursor.description])
         csv_writer.writerows(cursor)
+print("Time to save history as csv:", round(time()-start, 2))
 
+start = time()
 dataset = read_csv(file)
 #dataset["visit_time"] = dataset["visit_time"].apply(lambda x: str(x[:7])) #To get only year and month in date
 #print(dataset.groupby("visit_time").size()) #Number of sites visited in each month
@@ -50,7 +54,7 @@ dataset = dataset.sort_values(ascending=False, by="visit_time")
 times_frequency = dataset.groupby("visit_time").size()
 times_only = []
 frequency_of_times = []
-print(times_frequency)
+#print(times_frequency)
 for i in times_frequency.keys():
     times_only.append(int(i))
     frequency_of_times.append(int(times_frequency[i]))
@@ -96,6 +100,8 @@ for date in groupedby_months.keys():
     month_years.append(date)
     number_of_sites_visited_in_months.append(groupedby_months[date])
 
+print("Time to analyse:", round(time()-start, 2))
+
 """plt.figure(figsize=(8,8))
 #pie_chart = fig.add_subplot(211)
 plt.axis('equal')
@@ -129,6 +135,8 @@ axes[1,1].bar(times_only, frequency_of_times)
 fig.tight_layout()
 
 plt.show()"""
+
+start = time()
 
 fig = plt.figure(figsize=(16,9))
 """gs = fig.add_gridspec(ncols = 4, nrows = 2)
@@ -177,5 +185,8 @@ for rect, label in zip(rects, months):
 
 plt.tight_layout()
 plt.savefig(path.join(outdir, "Graphs.pdf"), format="pdf")
+
+print("Time to plot:", round(time()-start, 2))
+
 plt.show()
 plt.close()
