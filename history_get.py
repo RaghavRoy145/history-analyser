@@ -12,7 +12,7 @@ from pathlib import Path
 from sys import platform
 from os import path
 from calendar import month_name
-print("Time to import:", round(time()-start, 2))
+print("Time to import:", round(time()-start, 2), "s")
 
 start = time()
 if not path.exists("Output"): os.mkdir("Output")
@@ -30,7 +30,7 @@ if prof != "0":
     copyHistory("Profile "+prof)
 else:
     copyHistory()
-print("Time to copy history:", round(time()-start, 2))
+print("Time to copy history:", round(time()-start, 2), "s")
 
 start = time()
 conn = connect(path.join(outdir, "Copied_History"))
@@ -43,7 +43,7 @@ with open(file, "w", newline='') as csv_file:
         csv_writer = writer(csv_file)
         csv_writer.writerow([i[0] for i in cursor.description])
         csv_writer.writerows(cursor)
-print("Time to save history as csv:", round(time()-start, 2))
+print("Time to save history as csv:", round(time()-start, 2), "s")
 
 start = time()
 dataset = read_csv(file)
@@ -101,7 +101,7 @@ for date in groupedby_months.keys():
     month_years.append(date)
     number_of_sites_visited_in_months.append(groupedby_months[date])
 
-print("Time to analyse:", round(time()-start, 2))
+print("Time to analyse:", round(time()-start, 2), "s")
 
 """plt.figure(figsize=(8,8))
 #pie_chart = fig.add_subplot(211)
@@ -187,8 +187,8 @@ for rect, label in zip(rects, months):
 plt.tight_layout()
 plt.savefig(path.join(outdir, "Graphs.pdf"), format="pdf")
 
-print("Time to plot:", round(time()-start, 2))
-print("Total Time taken:", round(time()-start_total, 3))
+print("Time to plot:", round(time()-start, 2), "s")
+print("Total Time taken:", round(time()-start_total, 3), "s")
 
 plt.show()
 plt.close()
