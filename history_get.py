@@ -103,47 +103,10 @@ for date in groupedby_months.keys():
 
 print("Time to analyse:", round(time()-start, 2), "s")
 
-"""plt.figure(figsize=(8,8))
-#pie_chart = fig.add_subplot(211)
-plt.axis('equal')
-plt.pie(frequency, labels=urls[:10]+["" for x in range(0,len(urls)-10)], labeldistance=1.05, rotatelabels=True)
-plt.savefig(path.join(outdir, "pie_chart.svg"))
-#plt.show()
-#bar_graph = fig.add_subplot(212)
-x_ticks = range(len(urls))
-plt.figure(figsize=(16,9))
-plt.bar(x_ticks, frequency)
-plt.xticks(range(len(urls)), urls, rotation="vertical")
-plt.tight_layout()
-#plt.show()
-plt.savefig(path.join(outdir, "bar_graph.svg"))
-plt.close()"""
-
-"""fig, axes = plt.subplots(2,2,figsize=(14,9))
-#pie_chart = fig.add_subplot(311)
-axes[0,0].axis("equal")
-axes[0,0].pie(frequency, rowspan=2, labels=urls[:10]+["" for x in range(0,len(urls)-10)], labeldistance=1.05, rotatelabels=True)
-
-#bar_graph = fig.add_subplot(312)
-x_ticks = range(len(urls))
-axes[0,1].bar(x_ticks, frequency)
-plt.sca(axes[1])
-plt.xticks(range(len(urls)), urls, rotation="vertical")
-
-#times = fig.add_subplot(313)
-axes[1,1].bar(times_only, frequency_of_times)
-
-fig.tight_layout()
-
-plt.show()"""
 
 start = time()
 
 fig = plt.figure(figsize=(16,9))
-"""gs = fig.add_gridspec(ncols = 4, nrows = 2)
-pie_ax = fig.add_subplot(gs[0:2,0:2])
-bar1_ax = fig.add_subplot(gs[0,2:4])
-bar2_ax = fig.add_subplot(gs[1,2:4])"""
 gs = fig.add_gridspec(ncols = 3, nrows = 2)
 pie_ax = fig.add_subplot(gs[0,0])
 bar3_ax = fig.add_subplot(gs[1,0])
