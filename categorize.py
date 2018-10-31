@@ -1,4 +1,5 @@
-from pandas import read_csv, DataFrame, concat, Series
+from pandas import read_csv, DataFrame, concat, Series, set_option, reset_option
+import pandas
 from os import path
 import matplotlib.pyplot as plt
 from time import time
@@ -12,13 +13,12 @@ categories_only = []
 urls_only = []
 start = time()
 for url in df["url"][:-1]:
-    c = category_urls[category_urls["url"] == url] #.str.contains(str(url))]
+    c = category_urls[category_urls["url"] == url] #.str.contains(str(url))
     if not c.empty:# and len(str(url)) > 5:
         categories_only.append(c["category"].iloc[0])
         urls_only.append(c["url"].iloc[0])
         #categories = concat([categories, c])
 categories = DataFrame({"category": categories_only, "url": urls_only})
-print(categories)
 print("Time to concat:", round(time()-start, 2))
 
 start = time()
@@ -45,6 +45,15 @@ frequency_total = sum(frequencies)
 frequency_percentages = [(x/frequency_total)*100 for x in frequencies]
 print("Time to get categories, frequency and percentages:", round(time()-start, 2))
 
+all_categories = ("Internet_and_Telecom","Not_working","Career_and_Education","News_and_Media","Science","Gambling","Shopping","Food_and_Drink","Books_and_Literature","Autos_and_Vehicles","Pets_and_Animals","Health","Sports","Computer_and_Electronics","Reference","Arts_and_Entertainment","Beauty_and_Fitness","Adult","Games","Law_and_Government","Finance","Business_and_Industry","Recreation_and_Hobbies","People_and_Society","Home_and_Garden","Travel","Social_Media")
+categories_percentages = DataFrame(columns=all_categories)
+for column_name, values in categories_percentages.iteritems():
+    for category in categories:
+        if category == column_name:
+            categories_percentages[column_name] = Series(frequency_percentages[categories.index(category)])
+categories_percentages = categories_percentages.fillna(0)
+categories_percentages.to_csv(path.join("Output", "category_percentage.csv"))
+
 x = range(0, len(categories))
 
 start = time()
@@ -66,6 +75,8 @@ print("Total time taken:", round(time()-start_total, 3))
 plt.show()
 plt.close()
 
+with pandas.option_context('display.max_rows', None, 'display.max_columns', None):
+    print(categories_percentages)
 """def get_frequency(a):
     for row in df.itertuples():
         print(a, row[1])
