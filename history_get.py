@@ -1,47 +1,52 @@
 prof = input("Enter profile number (0 for default): ")
 
-import sqlite3
-import pandas
-import csv
-import datetime
+from time import perf_counter as time
+start_total = time()
+start = time()
+from sqlite3 import connect
+from pandas import read_csv
+from csv import writer
 import matplotlib.pyplot as plt
 from shutil import copyfile
 from pathlib import Path
-import sys
-import os
-import calendar
+from sys import platform
+from os import path
+from calendar import month_name
+print("Time to import:", round(time()-start, 2), "s")
 
-if not os.path.exists("Output"): os.mkdir("Output")
-def OutputDirectory():
-    if sys.platform=="win32":
-        return "Output\\"
-    elif sys.platform=="linux" or sys.platform=="darwin":
-        return "Output/"
+start = time()
+if not path.exists("Output"): os.mkdir("Output")
+outdir = "Output"
 def copyHistory(prof="Default"):
-    if sys.platform=="win32":
-        copyfile(str(Path.home())+"\\AppData\\Local\\Google\\Chrome\\User Data\\" + prof + "\\History", OutputDirectory()+"Copied_History")
-    elif sys.platform=="linux" or sys.platform=="darwin":
-        copyfile(str(Path.home())+"/Library/Application Support/Google/Chrome/" + prof + "/History", OutputDirectory()+"Copied_History")
-
-
+    pt = ""
+    if platform=="win32":
+        pt = path.join(Path.home(), "AppData\\Local\\Google\\Chrome\\User Data", prof, "History")
+    elif platform=="linux":
+        pt = path.join(Path.home(), ".config/google-chrome", prof, "History")
+    elif platform=="darwin":
+        pt = path.join(Path.home(), "Library/Application Support/Google/Chrome/", prof, "History")
+    copyfile(pt, path.join(outdir, "Copied_History"))
 if prof != "0" and prof != "":
     copyHistory("Profile "+prof)
-
 else:
     copyHistory()
+print("Time to copy history:", round(time()-start, 2), "s")
 
-conn = sqlite3.connect(OutputDirectory()+"Copied_History")
+start = time()
+conn = connect(path.join(outdir, "Copied_History"))
 cursor = conn.cursor()
 cursor.execute("SELECT datetime(visits.visit_time/1000000-11644473600, 'unixepoch', 'localtime') as 'visit_time',urls.url from urls,visits WHERE urls.id = visits.url ORDER BY visit_time DESC")
 
-file = OutputDirectory()+"url_visittime.csv"
+file = path.join(outdir, "url_visittime.csv")
 
 with open(file, "w", newline='') as csv_file:
-        csv_writer = csv.writer(csv_file)
+        csv_writer = writer(csv_file)
         csv_writer.writerow([i[0] for i in cursor.description])
         csv_writer.writerows(cursor)
+print("Time to save history as csv:", round(time()-start, 2), "s")
 
-dataset = pandas.read_csv(file)
+start = time()
+dataset = read_csv(file)
 #dataset["visit_time"] = dataset["visit_time"].apply(lambda x: str(x[:7])) #To get only year and month in date
 #print(dataset.groupby("visit_time").size()) #Number of sites visited in each month
 dataset_copy = dataset.copy()
@@ -50,7 +55,7 @@ dataset = dataset.sort_values(ascending=False, by="visit_time")
 times_frequency = dataset.groupby("visit_time").size()
 times_only = []
 frequency_of_times = []
-print(times_frequency)
+#print(times_frequency)
 for i in times_frequency.keys():
     times_only.append(int(i))
     frequency_of_times.append(int(times_frequency[i]))
@@ -59,7 +64,7 @@ dataset["url"] = dataset["url"].str.split("/").str[2]    #split url by / and get
 dataset["url"] = dataset["url"].str.replace("www.","")
 url_frequency = dataset.groupby("url").size() #Number of times each website is visited
 url_frequency = url_frequency.sort_values(ascending=False)
-url_frequency.to_csv(OutputDirectory() + "url_frequency.csv")
+url_frequency.to_csv(path.join(outdir, "url_frequency.csv"))
 url_frequency = url_frequency[url_frequency > 10]
 
 urls = []
@@ -96,45 +101,12 @@ for date in groupedby_months.keys():
     month_years.append(date)
     number_of_sites_visited_in_months.append(groupedby_months[date])
 
-"""plt.figure(figsize=(8,8))
-#pie_chart = fig.add_subplot(211)
-plt.axis('equal')
-plt.pie(frequency, labels=urls[:10]+["" for x in range(0,len(urls)-10)], labeldistance=1.05, rotatelabels=True)
-plt.savefig(OutputDirectory()+"pie_chart.svg")
-#plt.show()
-#bar_graph = fig.add_subplot(212)
-x_ticks = range(len(urls))
-plt.figure(figsize=(16,9))
-plt.bar(x_ticks, frequency)
-plt.xticks(range(len(urls)), urls, rotation="vertical")
-plt.tight_layout()
-#plt.show()
-plt.savefig(OutputDirectory()+"bar_graph.svg")
-plt.close()"""
+print("Time to analyse:", round(time()-start, 2), "s")
 
-"""fig, axes = plt.subplots(2,2,figsize=(14,9))
-#pie_chart = fig.add_subplot(311)
-axes[0,0].axis("equal")
-axes[0,0].pie(frequency, rowspan=2, labels=urls[:10]+["" for x in range(0,len(urls)-10)], labeldistance=1.05, rotatelabels=True)
 
-#bar_graph = fig.add_subplot(312)
-x_ticks = range(len(urls))
-axes[0,1].bar(x_ticks, frequency)
-plt.sca(axes[1])
-plt.xticks(range(len(urls)), urls, rotation="vertical")
-
-#times = fig.add_subplot(313)
-axes[1,1].bar(times_only, frequency_of_times)
-
-fig.tight_layout()
-
-plt.show()"""
+start = time()
 
 fig = plt.figure(figsize=(16,9))
-"""gs = fig.add_gridspec(ncols = 4, nrows = 2)
-pie_ax = fig.add_subplot(gs[0:2,0:2])
-bar1_ax = fig.add_subplot(gs[0,2:4])
-bar2_ax = fig.add_subplot(gs[1,2:4])"""
 gs = fig.add_gridspec(ncols = 3, nrows = 2)
 pie_ax = fig.add_subplot(gs[0,0])
 bar3_ax = fig.add_subplot(gs[1,0])
@@ -170,14 +142,18 @@ bar3_ax.set_xlabel("Month and Year")
 plt.sca(bar3_ax)
 plt.xticks(x_ticks, [], rotation="vertical")
 rects = bar3_ax.patches
-months = [x[:4]+"\n"+calendar.month_name[int(x[5:])] for x in month_years]
+months = [x[:4]+"\n"+month_name[int(x[5:])] for x in month_years]
 for rect, label in zip(rects, months):
     height = rect.get_height()
     bar3_ax.text(rect.get_x() + rect.get_width() / 2, height/2 - height/10, label,
             ha='center', va='bottom', fontsize="small")
 
 
-#plt.tight_layout()
-plt.savefig(OutputDirectory()+"Graphs.pdf", format="pdf")
+plt.tight_layout()
+plt.savefig(path.join(outdir, "Graphs.pdf"), format="pdf")
+
+print("Time to plot:", round(time()-start, 2), "s")
+print("Total Time taken:", round(time()-start_total, 3), "s")
+
 plt.show()
 plt.close()
