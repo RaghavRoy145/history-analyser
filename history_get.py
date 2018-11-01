@@ -10,12 +10,12 @@ import matplotlib.pyplot as plt
 from shutil import copyfile
 from pathlib import Path
 from sys import platform
-from os import path
+from os import path, mkdir
 from calendar import month_name
 print("Time to import:", round(time()-start, 2), "s")
 
 start = time()
-if not path.exists("Output"): os.mkdir("Output")
+if not path.exists("Output"): mkdir("Output")
 outdir = "Output"
 def copyHistory(prof="Default"):
     pt = ""
