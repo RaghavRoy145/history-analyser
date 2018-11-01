@@ -24,7 +24,7 @@ def copyHistory(prof="Default"):
         copyfile(str(Path.home())+"/Library/Application Support/Google/Chrome/" + prof + "/History", OutputDirectory()+"Copied_History")
 
 
-if prof != "0":
+if prof != "0" and prof != "":
     copyHistory("Profile "+prof)
 
 else:
@@ -146,12 +146,13 @@ pie_ax.pie(frequency, labels=urls[:10]+["" for x in range(0,len(urls)-10)], labe
 
 x_ticks = range(len(urls))
 bar1_ax.bar(x_ticks, frequency)
+bar1_ax.set_xlabel("Website url")
 plt.sca(bar1_ax)
 plt.xticks(x_ticks, [], rotation="vertical", fontsize=5)
 rects = bar1_ax.patches
 for rect, label in zip(rects, urls):
     bar1_ax.text(rect.get_x() + rect.get_width() / 2, 5, label,
-            ha='center', va='bottom', fontsize=5, rotation="vertical")
+            ha='center', va='bottom', fontsize=4, rotation="vertical")
 
 bar2_ax.bar(times_only, frequency_of_times)
 plt.sca(bar2_ax)
@@ -165,8 +166,9 @@ bar2_ax.set_xlabel("Time")
 
 x_ticks = range(len(groupedby_months))
 bar3_ax.bar(x_ticks, number_of_sites_visited_in_months)
+bar3_ax.set_xlabel("Month and Year")
 plt.sca(bar3_ax)
-plt.xticks(x_ticks, month_years, rotation="vertical")
+plt.xticks(x_ticks, [], rotation="vertical")
 rects = bar3_ax.patches
 months = [x[:4]+"\n"+calendar.month_name[int(x[5:])] for x in month_years]
 for rect, label in zip(rects, months):
