@@ -56,7 +56,7 @@ times_frequency = dataset.groupby("visit_time").size()
 times_only = list(times_frequency.keys())
 frequency_of_times = list(times_frequency.values)
 """times_only = []
-frequency_of_times = []
+#frequency_of_times = []
 for i in times_frequency.keys():
     times_only.append(int(i))
     frequency_of_times.append(int(times_frequency[i]))"""
