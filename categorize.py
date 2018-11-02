@@ -35,12 +35,14 @@ category_frequency = (categories.groupby("category")["frequency"].sum())
 print("Time to categorize:", round(time()-start, 2))
 
 start = time()
-categories = []
-frequencies = []
 frequency_percentages = []
+categories = list(category_frequency.keys())
+frequencies = list(category_frequency.values)
+"""categories = []
+frequencies = []
 for i in category_frequency.keys():
     categories.append(i)
-    frequencies.append(category_frequency[i])
+    frequencies.append(category_frequency[i])"""
 frequency_total = sum(frequencies)
 frequency_percentages = [(x/frequency_total)*100 for x in frequencies]
 print("Time to get categories, frequency and percentages:", round(time()-start, 2))
