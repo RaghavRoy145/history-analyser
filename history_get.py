@@ -18,27 +18,18 @@ start = time()
 if not path.exists("Output"): mkdir("Output")
 outdir = "Output"
 
-history_path = ""
-if platform=="win32":
-    history_path = path.join(Path.home(), "AppData\\Local\\Google\\Chrome\\User Data", prof, "History")
-elif platform=="linux":
-    history_path = path.join(Path.home(), ".config/google-chrome", prof, "History")
-elif platform=="darwin":
-    
+if prof == "0" or prof == "": prof = "Default"
+else: prof = "Profile " + prof
 
-def copyHistory(prof="Default"):
-    pt = ""
-    if platform=="win32":
-        pt = path.join(Path.home(), "AppData\\Local\\Google\\Chrome\\User Data", prof, "History")
-    elif platform=="linux":
-        pt = path.join(Path.home(), ".config/google-chrome", prof, "History")
-    elif platform=="darwin":
-        pt = path.join(Path.home(), "Library/Application Support/Google/Chrome/", prof, "History")
-    copyfile(pt, path.join(outdir, "Copied_History"))
-if prof != "0" and prof != "":
-    copyHistory("Profile "+prof)
-else:
-    copyHistory()
+if platform=="win32":
+    history_folder = path.join(Path.home(),"AppData\\Local\\Google\\Chrome\\User Data")
+elif platform=="linux":
+    history_folder = path.join(Path.home(), ".config/google-chrome")
+elif platform=="darwin":
+    history_folder = path.join(Path.home(), "Library/Application Support/Google/Chrome/")
+
+copyfile(path.join(history_folder, prof, "History"), path.join(outdir, "Copied_History"))
+
 print("Time to copy history:", round(time()-start, 2), "s")
 
 start = time()
