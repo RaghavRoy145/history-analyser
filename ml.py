@@ -25,7 +25,7 @@ percentages = [list((category_percentages.values.tolist())[0][1:])]
 
 X = array[:, 2:-1]
 Y = array[:, 0]
-validation_size = 0.20
+validation_size = 0.50
 seed = 7
 X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, test_size=validation_size, random_state=seed)
 #print("Train:",X_train,Y_train)
@@ -34,7 +34,7 @@ alg = alg_maker(algorithm)#GaussianNB()#SVC(gamma="auto")
 alg.fit(X_train,Y_train)
 predictions = alg.predict(X_validation)
 print("Accuracy:",accuracy_score(Y_validation, predictions)*100,"%")
-print("Errors made:",confusion_matrix(Y_validation, predictions))
+#print("Errors made:",confusion_matrix(Y_validation, predictions))
 #print(classification_report(Y_validation, predictions))
 
 alg = alg_maker(algorithm)
@@ -57,7 +57,7 @@ alg_age = alg_maker(algorithm)#SVC(gamma="auto")
 alg_age.fit(X_age_train,Y_age_train)
 predictions = alg_age.predict(X_age_validation)
 print("Accuracy:",accuracy_score(Y_age_validation, predictions)*100,"%")
-print("Errors made:",confusion_matrix(Y_age_validation, predictions))
+#print("Errors made:",confusion_matrix(Y_age_validation, predictions))
 #print(classification_report(Y_age_validation, predictions))
 
 alg_age = alg_maker(algorithm)#SVC(gamma="auto")
