@@ -17,6 +17,15 @@ print("Time to import:", round(time()-start, 2), "s")
 start = time()
 if not path.exists("Output"): mkdir("Output")
 outdir = "Output"
+
+history_path = ""
+if platform=="win32":
+    history_path = path.join(Path.home(), "AppData\\Local\\Google\\Chrome\\User Data", prof, "History")
+elif platform=="linux":
+    history_path = path.join(Path.home(), ".config/google-chrome", prof, "History")
+elif platform=="darwin":
+    
+
 def copyHistory(prof="Default"):
     pt = ""
     if platform=="win32":
@@ -55,11 +64,6 @@ dataset = dataset.sort_values(ascending=False, by="visit_time")
 times_frequency = dataset.groupby("visit_time").size()
 times_only = list(times_frequency.keys())
 frequency_of_times = list(times_frequency.values)
-"""times_only = []
-#frequency_of_times = []
-for i in times_frequency.keys():
-    times_only.append(int(i))
-    frequency_of_times.append(int(times_frequency[i]))"""
 
 dataset["url"] = dataset["url"].str.split("/").str[2]    #split url by / and get only the website name
 dataset["url"] = dataset["url"].str.replace("www.","")
@@ -70,15 +74,6 @@ url_frequency = url_frequency[url_frequency > 10]
 
 urls = (list(url_frequency.keys()))
 frequency = (list(url_frequency.values))
-
-
-"""urls = []
-frequency = []
-for i in url_frequency.keys():
-    urls.append(i)
-    freq = url_frequency[i]
-    frequency.append(freq)"""
-
 
 print("Top 50 most used:")
 for j in url_frequency.keys()[:50]:
@@ -103,11 +98,6 @@ dataset_copy["visit_time"] = dataset_copy["visit_time"].apply(lambda x: str(x[:7
 groupedby_months = dataset_copy.groupby("visit_time").size()
 month_years = list(groupedby_months.keys())
 number_of_sites_visited_in_months = list(groupedby_months.values)
-"""month_years = []
-number_of_sites_visited_in_months = []
-for date in groupedby_months.keys():
-    month_years.append(date)
-    number_of_sites_visited_in_months.append(groupedby_months[date])"""
 
 print("Time to analyse:", round(time()-start, 2), "s")
 
@@ -122,7 +112,7 @@ bar1_ax = fig.add_subplot(gs[0,1:3])
 bar2_ax = fig.add_subplot(gs[1,1:3])
 
 pie_ax.axis("equal")
-pie_ax.pie(frequency, labels=urls[:10]+["" for x in range(0,len(urls)-10)], labeldistance=1, rotatelabels=True)
+pie_ax.pie(frequency, labels=urls[:15]+["" for x in range(0,len(urls)-15)], labeldistance=1, rotatelabels=True)
 
 x_ticks = range(len(urls))
 bar1_ax.bar(x_ticks, frequency)

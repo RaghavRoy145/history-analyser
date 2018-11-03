@@ -38,11 +38,6 @@ start = time()
 frequency_percentages = []
 categories = list(category_frequency.keys())
 frequencies = list(category_frequency.values)
-"""categories = []
-frequencies = []
-for i in category_frequency.keys():
-    categories.append(i)
-    frequencies.append(category_frequency[i])"""
 frequency_total = sum(frequencies)
 frequency_percentages = [(x/frequency_total)*100 for x in frequencies]
 print("Time to get categories, frequency and percentages:", round(time()-start, 2))
@@ -79,31 +74,3 @@ plt.close()
 
 with pandas.option_context('display.max_rows', None, 'display.max_columns', None):
     print(categories_percentages)
-"""def get_frequency(a):
-    for row in df.itertuples():
-        print(a, row[1])
-        if row[1] in a:
-            return row[2]
-        else:
-            return "NA"
-
-frequencies = categories["url"].apply(get_frequency) #lambda x : df.frequency[categories.url.str.contains(str(x))].sum(),1)
-print(frequencies)"""
-"""for url1 in categories["url"]:
-    for url2 in df["url"]:
-        if str(url2) in str(url1):
-            frequencies.append(df.loc[df["url"] == url2, "frequency"].iloc[0])"""
-        #categories = categories.assign(freq = df.get(url2))
-#print(frequencies)
-#print(len(categories))
-#print(len(frequencies))
-#categories = categories.assign(freq = frequencies)
-"""urls = []
-for url in categories["url"]:
-    for url2 in df["url"]:
-        if str(url2) in str(url):
-            urls.append(categories[categories["url"].str.replace(str(url), str(url2))])
-            categories_of_urls.append()
-print(urls)
-categories_of_urls = []"""
-
