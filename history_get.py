@@ -1,48 +1,68 @@
-#prof = input("Enter profile number (0 for default): ")
-
 from time import perf_counter as time
 start_total = time()
 from sys import platform
-from os import path, mkdir
+from os import path, mkdir, listdir
 from pathlib import Path
 
-if platform=="win32":
-    history_folder = path.join(Path.home(),"AppData\\Local\\Google\\Chrome\\User Data")
-elif platform=="linux":
-    history_folder = path.join(Path.home(), ".config/google-chrome")
-elif platform=="darwin":
-    history_folder = path.join(Path.home(), "Library/Application Support/Google/Chrome/")
-print("Profiles available:\n\tDefault")
-i = 1
-while path.exists(path.join(history_folder, "Profile " + str(i))):
-    print("\tProfile ", i)
-    i += 1
-prof = input("Enter profile number (0 for default): ")
-start = time()
-if prof == "0" or prof == "": prof = "Default"
-else: prof = "Profile " + prof
+browser = (input("Choose which browser to get the history from (C for Chrome, F for Firefox): ")).lower()
 
+if browser.startswith('c'):
+    if platform.startswith("win"):
+        history_folder = path.join(Path.home(),"AppData\\Local\\Google\\Chrome\\User Data")
+    elif platform=="linux":
+        history_folder = path.join(Path.home(), ".config/google-chrome")
+    elif platform=="darwin":
+        history_folder = path.join(Path.home(), "Library/Application Support/Google/Chrome/")
+    else:
+        print("Unsupported OS")
+        quit()
+    print("Profiles available:\n\tDefault")
+    i = 1
+    while path.exists(path.join(history_folder, "Profile " + str(i))):
+        print("\tProfile ", i)
+        i += 1
+    prof = input("Enter profile number (0 for default): ")
+    start = time()
+    if prof == "0" or prof == "": prof = "Default"
+    else: prof = "Profile " + prof
+    history_path = path.join(history_folder, prof, "History")
+
+elif browser.startswith('f'):
+    start = time()
+    if platform.startswith("win"):
+        history_folder = path.join(Path.home(),"AppData\\Roaming\\Mozilla\\Firefox\\Profiles")
+    elif platform=="linux":
+        history_folder = path.join(Path.home(), ".mozilla/firefox")
+    elif platform=="darwin":
+        history_folder = path.join(Path.home(), "Library/Application Support/Firefox/Profiles")
+    else:
+        print("Unsupported OS")
+        quit()
+    history_path = path.join(history_folder, [i for i in listdir(history_folder) if i.endswith('.default')][0], "places.sqlite")
+    
 from sqlite3 import connect
 from pandas import read_csv
 from csv import writer
 import matplotlib.pyplot as plt
 from shutil import copyfile
 from calendar import month_name
-#print("Time to import:", round(time()-start, 2), "s")
 
-#start = time()
 if not path.exists("Output"): mkdir("Output")
-outdir = "Output"
+OUTDIR = "Output"
 
-copyfile(path.join(history_folder, prof, "History"), path.join(outdir, "Copied_History"))
+copyfile(history_path, path.join(OUTDIR, "Copied_History"))
 print("Time to import and copy history:", round(time()-start, 2), "s")
 
 start = time()
-conn = connect(path.join(outdir, "Copied_History"))
+conn = connect(path.join(OUTDIR, "Copied_History"))
 cursor = conn.cursor()
-cursor.execute("SELECT datetime(visits.visit_time/1000000-11644473600, 'unixepoch', 'localtime') as 'visit_time',urls.url from urls,visits WHERE urls.id = visits.url ORDER BY visit_time DESC")
-
-file = path.join(outdir, "url_visittime.csv")
+if browser.startswith('c'):
+    cursor.execute("SELECT datetime(visits.visit_time/1000000-11644473600, 'unixepoch', 'localtime') as 'visit_time',urls.url from urls,visits WHERE urls.id = visits.url ORDER BY visit_time DESC")
+elif browser.startswith('f'):
+    cursor.execute("""select url, datetime(last_visit_date/1000000, 'unixepoch', 'localtime') as 'visit_time'
+        from moz_historyvisits natural join moz_places where
+        last_visit_date is not null and url  like 'http%' and title is not null""")
+file = path.join(OUTDIR, "url_visittime.csv")
 
 with open(file, "w", newline='') as csv_file:
         csv_writer = writer(csv_file)
@@ -65,7 +85,7 @@ dataset["url"] = dataset["url"].str.split("/").str[2]    #split url by / and get
 dataset["url"] = dataset["url"].str.replace("www.","")
 url_frequency = dataset.groupby("url").size() #Number of times each website is visited
 url_frequency = url_frequency.sort_values(ascending=False)
-url_frequency.to_csv(path.join(outdir, "url_frequency.csv"))
+url_frequency.to_csv(path.join(OUTDIR, "url_frequency.csv"))
 url_frequency = url_frequency[url_frequency > 10]
 
 urls = (list(url_frequency.keys()))
@@ -136,15 +156,15 @@ bar3_ax.set_xlabel("Month and Year")
 plt.sca(bar3_ax)
 plt.xticks(x_ticks, [], rotation="vertical")
 rects = bar3_ax.patches
-months = [x[:4]+"\n"+month_name[int(x[5:])] for x in month_years]
+months = [month_name[int(x[5:])] + " " + x[:4] for x in month_years]
 for rect, label in zip(rects, months):
     height = rect.get_height()
     bar3_ax.text(rect.get_x() + rect.get_width() / 2, height/2 - height/10, label,
-            ha='center', va='bottom', fontsize="small")
+            ha='center', va='bottom', fontsize="small", rotation="vertical")
 
 
 plt.tight_layout()
-plt.savefig(path.join(outdir, "Graphs.pdf"), format="pdf")
+plt.savefig(path.join(OUTDIR, "Graphs.pdf"), format="pdf")
 
 print("Time to plot:", round(time()-start, 2), "s")
 print("Total Time taken:", round(time()-start_total, 3), "s")
