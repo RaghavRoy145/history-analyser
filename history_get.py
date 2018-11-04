@@ -1,25 +1,10 @@
-prof = input("Enter profile number (0 for default): ")
+#prof = input("Enter profile number (0 for default): ")
 
 from time import perf_counter as time
 start_total = time()
-start = time()
-from sqlite3 import connect
-from pandas import read_csv
-from csv import writer
-import matplotlib.pyplot as plt
-from shutil import copyfile
-from pathlib import Path
 from sys import platform
 from os import path, mkdir
-from calendar import month_name
-print("Time to import:", round(time()-start, 2), "s")
-
-start = time()
-if not path.exists("Output"): mkdir("Output")
-outdir = "Output"
-
-if prof == "0" or prof == "": prof = "Default"
-else: prof = "Profile " + prof
+from pathlib import Path
 
 if platform=="win32":
     history_folder = path.join(Path.home(),"AppData\\Local\\Google\\Chrome\\User Data")
@@ -27,10 +12,30 @@ elif platform=="linux":
     history_folder = path.join(Path.home(), ".config/google-chrome")
 elif platform=="darwin":
     history_folder = path.join(Path.home(), "Library/Application Support/Google/Chrome/")
+print("Profiles available:\n\tDefault")
+i = 1
+while path.exists(path.join(history_folder, "Profile " + str(i))):
+    print("\tProfile ", i)
+    i += 1
+prof = input("Enter profile number (0 for default): ")
+start = time()
+if prof == "0" or prof == "": prof = "Default"
+else: prof = "Profile " + prof
+
+from sqlite3 import connect
+from pandas import read_csv
+from csv import writer
+import matplotlib.pyplot as plt
+from shutil import copyfile
+from calendar import month_name
+#print("Time to import:", round(time()-start, 2), "s")
+
+#start = time()
+if not path.exists("Output"): mkdir("Output")
+outdir = "Output"
 
 copyfile(path.join(history_folder, prof, "History"), path.join(outdir, "Copied_History"))
-
-print("Time to copy history:", round(time()-start, 2), "s")
+print("Time to import and copy history:", round(time()-start, 2), "s")
 
 start = time()
 conn = connect(path.join(outdir, "Copied_History"))
