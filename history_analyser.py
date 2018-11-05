@@ -114,7 +114,7 @@ def time_24hours_to_12hours(time_24):
     return time_12
 times_only_12hours = list(map(time_24hours_to_12hours, times_only))
 
-ataset_copy["visit_time"] = dataset_copy["visit_time"].apply(lambda x: str(x[:7])) #To get only year and month in date
+dataset_copy["visit_time"] = dataset_copy["visit_time"].apply(lambda x: str(x[:7])) #To get only year and month in date
 groupedby_months = dataset_copy.groupby("visit_time").size()
 month_years = list(groupedby_months.keys())
 number_of_sites_visited_in_months = list(groupedby_months.values)
@@ -140,7 +140,7 @@ plt.xticks(x_ticks, [], rotation="vertical", fontsize=5)
 rects = bar1_ax.patches
 for rect, label in zip(rects, urls):
     bar1_ax.text(rect.get_x() + rect.get_width() / 2, 5, label,
-            ha='center', va='bottom', fontsize=4, rotation="vertical")
+            ha='center', va='bottom', fontsize=5, rotation="vertical")
 
 bar2_ax.bar(times_only, frequency_of_times)
 plt.sca(bar2_ax)
@@ -148,8 +148,8 @@ plt.xticks(times_only, [], rotation="vertical")
 rects = bar2_ax.patches
 for rect, label in zip(rects, times_only_12hours):
     height = rect.get_height()
-    bar2_ax.text(rect.get_x() + rect.get_width() / 2, height + 5, label,
-            ha='center', va='bottom', fontsize="x-small")
+    bar2_ax.text(rect.get_x() + rect.get_width() / 2, height - 0.2, label,
+            ha='center', va='bottom', fontsize="small")
 bar2_ax.set_xlabel("Time")
 
 x_ticks = range(len(groupedby_months))
@@ -161,7 +161,7 @@ rects = bar3_ax.patches
 months = [month_name[int(x[5:])] + " " + x[:4] for x in month_years]
 for rect, label in zip(rects, months):
     height = rect.get_height()
-    bar3_ax.text(rect.get_x() + rect.get_width() / 2, height/2 - height/10, label,
+    bar3_ax.text(rect.get_x() + rect.get_width() / 2, height/2 - height/6, label,
             ha='center', va='bottom', fontsize="small", rotation="vertical")
 
 
@@ -224,9 +224,10 @@ bar_ax.bar(x, frequency_percentages)
 plt.sca(bar_ax)
 plt.xticks(x, categories, rotation="vertical")
 rects = bar_ax.patches
+graph_height = (fig.get_size_inches()*fig.dpi)[1]
 for rect, label in zip(rects, frequency_percentages):
     label = str(int(round(label))) + "%"
-    bar_ax.text(rect.get_x() + rect.get_width() / 2, rect.get_height(), label,
+    bar_ax.text(rect.get_x() + rect.get_width() / 2, rect.get_height() - 0.3, label,
             ha='center', va='bottom')
 plt.tight_layout()
 plt.savefig(path.join("Output", "Category_Graphs.pdf"), format="pdf")
@@ -234,3 +235,60 @@ print("Time to plot:", round(time()-start, 2))
 print("Total time taken:", round(time()-start_total, 3))
 plt.show()
 plt.close()
+
+def warn(*args, **kwargs):
+    pass
+import warnings
+warnings.warn = warn
+from sklearn import model_selection
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
+
+def alg_maker(alg):
+    return alg()
+algorithm = GaussianNB
+
+dataset = read_csv("gender_age_dataset.csv")
+dataset = dataset.fillna(0)
+array = dataset.values
+
+category_percentages = read_csv(path.join("Output", "category_percentage.csv"))
+percentages = [list((category_percentages.values.tolist())[0][1:])]
+
+X = array[:, 2:-1]
+Y = array[:, 0]
+validation_size = 0.50
+seed = 7
+X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, test_size=validation_size, random_state=seed)
+alg = alg_maker(algorithm)
+alg.fit(X_train,Y_train)
+predictions = alg.predict(X_validation)
+print("Accuracy:",accuracy_score(Y_validation, predictions)*100,"%")
+
+alg = alg_maker(algorithm)
+alg.fit(X,Y)
+predictions_for_history_gender = alg.predict(percentages)
+print("Predicted gender:",predictions_for_history_gender)
+
+X_age = array[:, 2:-1]
+Y_age = array[:, 1]
+Y_age=Y_age.astype('int')
+validation_size = 0.50
+seed = 7
+X_age_train, X_age_validation, Y_age_train, Y_age_validation = model_selection.train_test_split(X_age, Y_age, test_size=validation_size, random_state=seed)
+alg_age = alg_maker(algorithm)
+alg_age.fit(X_age_train,Y_age_train)
+predictions = alg_age.predict(X_age_validation)
+print("Accuracy:",accuracy_score(Y_age_validation, predictions)*100,"%")
+
+alg_age = alg_maker(algorithm)
+alg_age.fit(X_age,Y_age)
+predictions_for_history_age = alg_age.predict(percentages)
+print("Predicted Age:",predictions_for_history_age)

@@ -9,17 +9,17 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from os import path
-import pandas
+from pandas import read_csv
 
 def alg_maker(alg):
     return alg()
 algorithm = GaussianNB
 
-dataset = pandas.read_csv("gender_age_dataset.csv")
+dataset = read_csv("gender_age_dataset.csv")
 dataset = dataset.fillna(0)
 array = dataset.values
 
-category_percentages = pandas.read_csv(path.join("Output", "category_percentage.csv"))
+category_percentages = read_csv(path.join("Output", "category_percentage.csv"))
 percentages = [list((category_percentages.values.tolist())[0][1:])]
 #print(percentages)
 
