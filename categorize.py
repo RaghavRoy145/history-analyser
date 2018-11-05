@@ -1,5 +1,4 @@
-from pandas import read_csv, DataFrame, concat, Series, set_option, reset_option
-import pandas
+from pandas import read_csv, DataFrame, concat, Series, set_option, reset_option, option_context
 from os import path
 import matplotlib.pyplot as plt
 from time import time
@@ -72,5 +71,5 @@ print("Total time taken:", round(time()-start_total, 3))
 plt.show()
 plt.close()
 
-with pandas.option_context('display.max_rows', None, 'display.max_columns', None):
+with option_context('display.max_rows', None, 'display.max_columns', None):
     print(categories_percentages)
