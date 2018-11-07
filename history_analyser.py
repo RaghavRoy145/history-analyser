@@ -7,7 +7,9 @@ from pathlib import Path
 browser = ""
 while not (browser.startswith('c') or browser.startswith('f')):
     browser = (input("Choose which browser to get the history from (C for Chrome, F for Firefox): ")).lower()
-
+show_graphs = (input("Show Graphs? (Y/N):")).lower()
+if show_graphs.startswith('y') or show_graphs.startswith('t'): show_graphs = True
+else: show_graphs = False
 
 if browser.startswith('c'):
     if platform.startswith("win"):
@@ -21,12 +23,12 @@ if browser.startswith('c'):
         quit()
     print("Profiles available:\n\tDefault")
     i = 1
-    profiles = ['0']
+    profiles = ["0",""]
     while path.exists(path.join(history_folder, "Profile " + str(i))):
         print("\tProfile ", i)
         profiles.append(str(i))
         i += 1
-    prof = ''
+    prof = " "
     while prof not in profiles:
         prof = input("Enter profile number (0 for default): ")
     start = time()
@@ -56,6 +58,9 @@ from calendar import month_name
 
 if not path.exists("Output"): mkdir("Output")
 OUTDIR = "Output"
+BOLD = '\033[1m'
+END = '\033[0m'
+BLUE = '\033[94m'
 
 copyfile(history_path, path.join(OUTDIR, "Copied_History"))
 print("Time to import and copy history:", round(time()-start, 2), "s")
@@ -96,9 +101,10 @@ url_frequency = url_frequency[url_frequency > 10]
 urls = (list(url_frequency.keys()))
 frequency = (list(url_frequency.values))
 
-print("Top 50 most used:")
+print("\n\x1b[0;33;40mTop 50 most used:")
 for j in url_frequency.keys()[:50]:
     print(j," - ",url_frequency[j])
+print(END)
 
 def time_24hours_to_12hours(time_24):
     time_12 = ""
@@ -169,9 +175,8 @@ plt.tight_layout()
 plt.savefig(path.join(OUTDIR, "Graphs.pdf"), format="pdf")
 
 print("Time to plot:", round(time()-start, 2), "s")
-print("Total Time taken:", round(time()-start_total, 3), "s")
 
-plt.show()
+if show_graphs: plt.show()
 plt.close()
 
 df = read_csv(path.join("Output", "url_frequency.csv"), names=["url", "frequency"])
@@ -233,7 +238,7 @@ plt.tight_layout()
 plt.savefig(path.join("Output", "Category_Graphs.pdf"), format="pdf")
 print("Time to plot:", round(time()-start, 2))
 print("Total time taken:", round(time()-start_total, 3))
-plt.show()
+if show_graphs: plt.show()
 plt.close()
 
 def warn(*args, **kwargs):
@@ -275,7 +280,11 @@ print("Accuracy:",accuracy_score(Y_validation, predictions)*100,"%")
 alg = alg_maker(algorithm)
 alg.fit(X,Y)
 predictions_for_history_gender = alg.predict(percentages)
-print("Predicted gender:",predictions_for_history_gender)
+if predictions_for_history_gender == ["M"]:
+    print(BLUE,BOLD,"Predicted gender: Male",END)
+elif predictions_for_history_gender == ["F"]:
+    print(BLUE,BOLD,"Predicted gender: Female",END)
+
 
 X_age = array[:, 2:-1]
 Y_age = array[:, 1]
@@ -291,4 +300,7 @@ print("Accuracy:",accuracy_score(Y_age_validation, predictions)*100,"%")
 alg_age = alg_maker(algorithm)
 alg_age.fit(X_age,Y_age)
 predictions_for_history_age = alg_age.predict(percentages)
-print("Predicted Age:",predictions_for_history_age)
+print(BLUE,BOLD,"Predicted Age:",predictions_for_history_age[0],END)
+
+print("Total Time taken:", round(time()-start_total, 3), "s")
+print("Graphs are saved as PDFs in the output folder")
