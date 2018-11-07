@@ -3,10 +3,15 @@ start_total = time()
 from sys import platform
 from os import path, mkdir, listdir
 from pathlib import Path
+from numpy import nan
 
 browser = ""
-while not (browser.startswith('c') or browser.startswith('f')):
-    browser = (input("Choose which browser to get the history from (C for Chrome, F for Firefox): ")).lower()
+if platform != "darwin":
+    while not (browser.startswith('c') or browser.startswith('f')):
+        browser = (input("Choose which browser to get the history from (C for Chrome, F for Firefox): ")).lower()
+elif platform == "darwin":
+    while not (browser.startswith('c') or browser.startswith('f') or browser.startswith('s')):
+        browser = (input("Choose which browser to get the history from (C for Chrome, F for Firefox, S for Safari): ")).lower()
 show_graphs = (input("Show Graphs? (Y/N):")).lower()
 if show_graphs.startswith('y') or show_graphs.startswith('t'): show_graphs = True
 else: show_graphs = False
@@ -49,6 +54,11 @@ elif browser.startswith('f'):
         quit()
     history_path = path.join(history_folder, [i for i in listdir(history_folder) if i.endswith('.default')][0], "places.sqlite")
 
+elif browser.startswith('s'):
+    start = time()
+    history_folder = path.join(Path.home(), "Library/Safari")
+    history_path = path.join(history_folder, "History.db")
+
 from sqlite3 import connect
 from pandas import read_csv, DataFrame, concat, Series, set_option, reset_option, option_context
 from csv import writer
@@ -74,6 +84,16 @@ elif browser.startswith('f'):
     cursor.execute("""select url, datetime(last_visit_date/1000000, 'unixepoch', 'localtime') as 'visit_time'
         from moz_historyvisits natural join moz_places where
         last_visit_date is not null and url  like 'http%' and title is not null""")
+elif browser.startswith('s'):
+    cursor.execute("""SELECT 
+        datetime(visit_time + 978307200, 'unixepoch', 'localtime') as visit_time, url
+        FROM 
+            history_visits
+        INNER JOIN 
+        history_items ON
+            history_items.id = history_visits.history_item
+        ORDER BY 
+            visit_time DESC""")
 file = path.join(OUTDIR, "url_visittime.csv")
 
 with open(file, "w", newline='') as csv_file:
@@ -93,6 +113,8 @@ frequency_of_times = list(times_frequency.values)
 
 dataset["url"] = dataset["url"].str.split("/").str[2]    #split url by / and get only the website name
 dataset["url"] = dataset["url"].str.replace("www.","")
+dataset["url"].replace('', nan, inplace=True)
+dataset.dropna(subset=["url"], inplace=True)
 url_frequency = dataset.groupby("url").size() #Number of times each website is visited
 url_frequency = url_frequency.sort_values(ascending=False)
 url_frequency.to_csv(path.join(OUTDIR, "url_frequency.csv"))
@@ -181,6 +203,7 @@ plt.close()
 
 df = read_csv(path.join("Output", "url_frequency.csv"), names=["url", "frequency"])
 category_urls = read_csv("url_categories_copy.csv", names=["category", "url"])
+category_urls["url"].str.strip()
 categories_only = []
 urls_only = []
 start = time()
