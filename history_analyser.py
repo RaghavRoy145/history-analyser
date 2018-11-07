@@ -237,7 +237,6 @@ for rect, label in zip(rects, frequency_percentages):
 plt.tight_layout()
 plt.savefig(path.join("Output", "Category_Graphs.pdf"), format="pdf")
 print("Time to plot:", round(time()-start, 2))
-print("Total time taken:", round(time()-start_total, 3))
 if show_graphs: plt.show()
 plt.close()
 
