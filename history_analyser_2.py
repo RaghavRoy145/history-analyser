@@ -57,8 +57,8 @@ import matplotlib.pyplot as plt
 from shutil import copyfile
 from calendar import month_name
 
-if not path.exists("Output"): mkdir("Output")
 OUTDIR = "Output"
+if not path.exists(OUTDIR): mkdir(OUTDIR)
 
 copyfile(history_path, path.join(OUTDIR, "Copied_History"))
 
