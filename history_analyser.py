@@ -291,13 +291,13 @@ percentages = [list((category_percentages.values.tolist())[0][1:])]
 
 X = array[:, 2:-1]
 Y = array[:, 0]
-validation_size = 0.50
+"""validation_size = 0.50
 seed = 7
 X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, test_size=validation_size, random_state=seed)
 alg = alg_maker(algorithm)
 alg.fit(X_train,Y_train)
 predictions = alg.predict(X_validation)
-print("Accuracy:",accuracy_score(Y_validation, predictions)*100,"%")
+print("Accuracy:",accuracy_score(Y_validation, predictions)*100,"%")"""
 
 alg = alg_maker(algorithm)
 alg.fit(X,Y)
@@ -311,13 +311,13 @@ elif predictions_for_history_gender == ["F"]:
 X_age = array[:, 2:-1]
 Y_age = array[:, 1]
 Y_age=Y_age.astype('int')
-validation_size = 0.50
+"""validation_size = 0.50
 seed = 7
 X_age_train, X_age_validation, Y_age_train, Y_age_validation = model_selection.train_test_split(X_age, Y_age, test_size=validation_size, random_state=seed)
 alg_age = alg_maker(algorithm)
 alg_age.fit(X_age_train,Y_age_train)
 predictions = alg_age.predict(X_age_validation)
-print("Accuracy:",accuracy_score(Y_age_validation, predictions)*100,"%")
+print("Accuracy:",accuracy_score(Y_age_validation, predictions)*100,"%")"""
 
 alg_age = alg_maker(algorithm)
 alg_age.fit(X_age,Y_age)
