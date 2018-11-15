@@ -1,7 +1,6 @@
 from sys import platform
 from os import path, mkdir, listdir
 from pathlib import Path
-from numpy import nan
 
 browser = ""
 if platform != "darwin":
@@ -98,7 +97,7 @@ frequency_of_times = list(times_frequency.values)
 
 dataset["url"] = dataset["url"].str.split("/").str[2]
 dataset["url"] = dataset["url"].str.replace("www.","")
-dataset["url"].replace('', nan, inplace=True)
+dataset["url"].replace('', None, inplace=True)
 dataset.dropna(subset=["url"], inplace=True)
 url_frequency = dataset.groupby("url").size()
 url_frequency = url_frequency.sort_values(ascending=False)
@@ -181,17 +180,17 @@ plt.savefig(path.join(OUTDIR, "Graphs.pdf"), format="pdf")
 plt.show()
 plt.close()
 
+#categorize
 df = read_csv(path.join("Output", "url_frequency.csv"), names=["url", "frequency"])
 category_urls = read_csv("url_categories_copy.csv", names=["category", "url"])
 category_urls["url"].str.strip()
 categories_only = []
 urls_only = []
 for url in df["url"][:-1]:
-    c = category_urls[category_urls["url"] == url] #.str.contains(str(url))
-    if not c.empty:# and len(str(url)) > 5:
+    c = category_urls[category_urls["url"] == url]
+    if not c.empty:
         categories_only.append(c["category"].iloc[0])
         urls_only.append(c["url"].iloc[0])
-        #categories = concat([categories, c])
 categories = DataFrame({"category": categories_only, "url": urls_only})
 
 categories["frequency"] = Series()
@@ -235,10 +234,6 @@ plt.savefig(path.join("Output", "Category_Graphs.pdf"), format="pdf")
 plt.show()
 plt.close()
 
-def warn():
-    pass
-import warnings
-warnings.warn = warn
 from sklearn.naive_bayes import GaussianNB
 
 dataset = read_csv("gender_age_dataset.csv")
