@@ -2,13 +2,7 @@ from sys import platform
 from os import path, mkdir, listdir
 from pathlib import Path
 
-browser = ""
-if platform != "darwin":
-    while not (browser.startswith('c') or browser.startswith('f')):
-        browser = (input("Choose which browser to get the history from (C for Chrome, F for Firefox): ")).lower()
-elif platform == "darwin":
-    while not (browser.startswith('c') or browser.startswith('f') or browser.startswith('s')):
-        browser = (input("Choose which browser to get the history from (C for Chrome, F for Firefox, S for Safari): ")).lower()
+browser = (input("Choose which browser to get the history from (C for Chrome, F for Firefox, S for Safari): ")).lower()
 
 if browser.startswith('c'):
     if platform.startswith("win"):
@@ -17,19 +11,7 @@ if browser.startswith('c'):
         history_folder = path.join(Path.home(), ".config/google-chrome")
     elif platform=="darwin":
         history_folder = path.join(Path.home(), "Library/Application Support/Google/Chrome/")
-    else:
-        print("Unsupported OS")
-        quit()
-    print("Profiles available:\n\tDefault")
-    i = 1
-    profiles = ["0",""]
-    while path.exists(path.join(history_folder, "Profile " + str(i))):
-        print("\tProfile ", i)
-        profiles.append(str(i))
-        i += 1
-    prof = " "
-    while prof not in profiles:
-        prof = input("Enter profile number (0 for default): ")
+    prof = input("Enter profile number (0 for default): ")
     if prof == "0" or prof == "": prof = "Default"
     else: prof = "Profile " + prof
     history_path = path.join(history_folder, prof, "History")
@@ -41,9 +23,6 @@ elif browser.startswith('f'):
         history_folder = path.join(Path.home(), ".mozilla/firefox")
     elif platform=="darwin":
         history_folder = path.join(Path.home(), "Library/Application Support/Firefox/Profiles")
-    else:
-        print("Unsupported OS")
-        quit()
     history_path = path.join(history_folder, [i for i in listdir(history_folder) if i.endswith('.default')][0], "places.sqlite")
 
 elif browser.startswith('s'):
@@ -51,7 +30,7 @@ elif browser.startswith('s'):
     history_path = path.join(history_folder, "History.db")
 
 from sqlite3 import connect
-from pandas import read_csv, DataFrame, concat, Series, set_option, reset_option, option_context
+from pandas import read_csv, DataFrame, concat, Series, set_option, reset_option, option_context, read_sql_query
 from csv import writer
 import matplotlib.pyplot as plt
 from shutil import copyfile
@@ -80,8 +59,8 @@ elif browser.startswith('s'):
             history_items.id = history_visits.history_item
         ORDER BY 
             visit_time DESC""")
-file = path.join(OUTDIR, "url_visittime.csv")
 
+file = path.join(OUTDIR, "url_visittime.csv")
 with open(file, "w", newline='') as csv_file:
         csv_writer = writer(csv_file)
         csv_writer.writerow([i[0] for i in cursor.description])
@@ -89,13 +68,13 @@ with open(file, "w", newline='') as csv_file:
 
 dataset = read_csv(file)
 dataset_copy = dataset.copy()
-dataset["visit_time"] = dataset["visit_time"].apply(lambda x: str(x[11:13]))
+dataset["visit_time"] = dataset["visit_time"].apply(lambda x: str(x[11:13])) #2018-11-16 11:56
 dataset = dataset.sort_values(ascending=False, by="visit_time")
 times_frequency = dataset.groupby("visit_time").size()
 times_only = list(times_frequency.keys())
 frequency_of_times = list(times_frequency.values)
 
-dataset["url"] = dataset["url"].str.split("/").str[2]
+dataset["url"] = dataset["url"].str.split("/").str[2] #http://www.google.com/asd/sadasd/
 dataset["url"] = dataset["url"].str.replace("www.","")
 dataset["url"].replace('', None, inplace=True)
 dataset.dropna(subset=["url"], inplace=True)
@@ -125,7 +104,7 @@ def time_24hours_to_12hours(time_24):
     return time_12
 times_only_12hours = list(map(time_24hours_to_12hours, times_only))
 
-dataset_copy["visit_time"] = dataset_copy["visit_time"].apply(lambda x: str(x[:7])) #To get only year and month in date
+dataset_copy["visit_time"] = dataset_copy["visit_time"].apply(lambda x: str(x[:7])) #To get only year and month in date #2018-11-16
 groupedby_months = dataset_copy.groupby("visit_time").size()
 month_years = list(groupedby_months.keys())
 number_of_sites_visited_in_months = list(groupedby_months.values)
@@ -138,8 +117,8 @@ bar3_ax = fig.add_subplot(gs[1,0])
 bar1_ax = fig.add_subplot(gs[0,1:3])
 bar2_ax = fig.add_subplot(gs[1,1:3])
 
-pie_ax.axis("equal")
 pie_ax.pie(frequency, labels=urls[:15]+["" for x in range(0,len(urls)-15)], labeldistance=1, rotatelabels=True)
+pie_ax.axis("equal")
 
 x_ticks = range(len(urls))
 bar1_ax.bar(x_ticks, frequency)
@@ -153,12 +132,7 @@ for rect, label in zip(rects, urls):
 
 bar2_ax.bar(times_only, frequency_of_times)
 plt.sca(bar2_ax)
-plt.xticks(times_only, [], rotation="vertical")
-rects = bar2_ax.patches
-for rect, label in zip(rects, times_only_12hours):
-    height = rect.get_height()
-    bar2_ax.text(rect.get_x() + rect.get_width() / 2, height - 0.2, label,
-            ha='center', va='bottom', fontsize="small")
+plt.xticks(times_only, times_only_12hours, rotation="vertical")
 bar2_ax.set_xlabel("Time")
 
 x_ticks = range(len(groupedby_months))
@@ -173,12 +147,11 @@ for rect, label in zip(rects, months):
     bar3_ax.text(rect.get_x() + rect.get_width() / 2, height/2 - height/6, label,
             ha='center', va='bottom', fontsize="small", rotation="vertical")
 
-
 plt.tight_layout()
 plt.savefig(path.join(OUTDIR, "Graphs.pdf"), format="pdf")
-
 plt.show()
 plt.close()
+
 
 #categorize
 df = read_csv(path.join("Output", "url_frequency.csv"), names=["url", "frequency"])
@@ -216,7 +189,6 @@ categories_percentages = categories_percentages.fillna(0)
 categories_percentages.to_csv(path.join("Output", "category_percentage.csv"))
 
 x = range(0, len(categories))
-
 fig = plt.figure()
 gs = fig.add_gridspec(ncols = 1, nrows = 1)
 bar_ax = fig.add_subplot(gs[0,0])
@@ -234,18 +206,17 @@ plt.savefig(path.join("Output", "Category_Graphs.pdf"), format="pdf")
 plt.show()
 plt.close()
 
+#prediction
 from sklearn.naive_bayes import GaussianNB
 
 dataset = read_csv("gender_age_dataset.csv")
 dataset = dataset.fillna(0)
 array = dataset.values
-
 category_percentages = read_csv(path.join("Output", "category_percentage.csv"))
 percentages = [list((category_percentages.values.tolist())[0][1:])]
 
 X = array[:, 2:-1]
 Y = array[:, 0]
-
 alg = GaussianNB()
 alg.fit(X,Y)
 predictions_for_history_gender = alg.predict(percentages)
@@ -254,14 +225,11 @@ if predictions_for_history_gender == ["M"]:
 elif predictions_for_history_gender == ["F"]:
     print("Predicted gender: Female")
 
-
 X_age = array[:, 2:-1]
 Y_age = array[:, 1]
 Y_age=Y_age.astype('int')
-
 alg_age = GaussianNB()
 alg_age.fit(X_age,Y_age)
 predictions_for_history_age = alg_age.predict(percentages)
 print("Predicted Age:",predictions_for_history_age[0])
-
 print("\nGraphs are saved as PDFs in the output folder")
