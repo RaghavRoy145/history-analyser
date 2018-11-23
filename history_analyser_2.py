@@ -2,7 +2,9 @@ from sys import platform
 from os import path, mkdir, listdir
 from pathlib import Path
 
-browser = (input("Choose which browser to get the history from (C for Chrome, F for Firefox, S for Safari): ")).lower()
+browser = ""
+while not (browser.startswith('c') or browser.startswith('f') or browser.startswith('s')):
+    browser = (input("Choose which browser to get the history from (C for Chrome, F for Firefox, S for Safari): ")).lower()
 
 if browser.startswith('c'):
     if platform.startswith("win"):
@@ -68,13 +70,13 @@ with open(file, "w", newline='') as csv_file:
 
 dataset = read_csv(file)
 dataset_copy = dataset.copy()
-dataset["visit_time"] = dataset["visit_time"].apply(lambda x: str(x[11:13])) #2018-11-16 11:56
+dataset["visit_time"] = dataset["visit_time"].apply(lambda x: str(x[11:13]))
 dataset = dataset.sort_values(ascending=False, by="visit_time")
 times_frequency = dataset.groupby("visit_time").size()
 times_only = list(times_frequency.keys())
 frequency_of_times = list(times_frequency.values)
 
-dataset["url"] = dataset["url"].str.split("/").str[2] #http://www.google.com/asd/sadasd/
+dataset["url"] = dataset["url"].str.split("/").str[2]
 dataset["url"] = dataset["url"].str.replace("www.","")
 dataset["url"].replace('', None, inplace=True)
 dataset.dropna(subset=["url"], inplace=True)
@@ -87,7 +89,7 @@ urls = (list(url_frequency.keys()))
 frequency = (list(url_frequency.values))
 
 print("Top 50 most used:")
-for j in url_frequency.keys()[:50]:
+for j in url_frequency.keys()[:51]:
     print(j," - ",url_frequency[j])
 
 def time_24hours_to_12hours(time_24):
@@ -104,12 +106,12 @@ def time_24hours_to_12hours(time_24):
     return time_12
 times_only_12hours = list(map(time_24hours_to_12hours, times_only))
 
-dataset_copy["visit_time"] = dataset_copy["visit_time"].apply(lambda x: str(x[:7])) #To get only year and month in date #2018-11-16
+dataset_copy["visit_time"] = dataset_copy["visit_time"].apply(lambda x: str(x[:7])) 
 groupedby_months = dataset_copy.groupby("visit_time").size()
 month_years = list(groupedby_months.keys())
 number_of_sites_visited_in_months = list(groupedby_months.values)
 
-#graphs
+#graphs for cs project starts here
 fig = plt.figure(figsize=(16,9))
 gs = fig.add_gridspec(ncols = 3, nrows = 2)
 pie_ax = fig.add_subplot(gs[0,0])
@@ -153,8 +155,8 @@ plt.show()
 plt.close()
 
 
-#categorize
-df = read_csv(path.join("Output", "url_frequency.csv"), names=["url", "frequency"])
+
+df = read_csv(path.join(OUTDIR, "url_frequency.csv"), names=["url", "frequency"])
 category_urls = read_csv("url_categories_copy.csv", names=["category", "url"])
 category_urls["url"].str.strip()
 categories_only = []
@@ -186,7 +188,7 @@ for column_name, values in categories_percentages.iteritems():
         if category == column_name:
             categories_percentages[column_name] = Series(frequency_percentages[categories.index(category)])
 categories_percentages = categories_percentages.fillna(0)
-categories_percentages.to_csv(path.join("Output", "category_percentage.csv"))
+categories_percentages.to_csv(path.join(OUTDIR, "category_percentage.csv"))
 
 x = range(0, len(categories))
 fig = plt.figure()
@@ -202,17 +204,16 @@ for rect, label in zip(rects, frequency_percentages):
     bar_ax.text(rect.get_x() + rect.get_width() / 2, rect.get_height() - 0.3, label,
             ha='center', va='bottom')
 plt.tight_layout()
-plt.savefig(path.join("Output", "Category_Graphs.pdf"), format="pdf")
+plt.savefig(path.join(OUTDIR, "Category_Graphs.pdf"), format="pdf")
 plt.show()
 plt.close()
 
-#prediction
 from sklearn.naive_bayes import GaussianNB
 
 dataset = read_csv("gender_age_dataset.csv")
 dataset = dataset.fillna(0)
 array = dataset.values
-category_percentages = read_csv(path.join("Output", "category_percentage.csv"))
+category_percentages = read_csv(path.join(OUTDIR, "category_percentage.csv"))
 percentages = [list((category_percentages.values.tolist())[0][1:])]
 
 X = array[:, 2:-1]
