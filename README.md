@@ -1,7 +1,12 @@
-Web Browser History Analyser
+# Web Browser History Analyser
 
-This works only for Windows/Linux/MacOS and only for Google Chrome and Mozilla Firefox browsers.
-Tested on Python 3.6.x
-Required modules - pandas, matplotlib, sklearn
+## Requirements
+ - Works on Windows, MacOS and Linux.
+ - Supports Google Chrome, Mozilla Firefox and Safari.
+ - Tested on Python 3.6.x
+ - **Required modules** - pandas, matplotlib, sklearn
 
-Run history_analyser.py
+## Usage
+ - Run `history_analyser.py` using
+ 
+    `python history_analyser.py` or `python3 history_analyser.py`
