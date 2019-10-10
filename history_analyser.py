@@ -52,7 +52,20 @@ elif browser.startswith('f'):
     else:
         print("Unsupported OS")
         quit()
-    history_path = path.join(history_folder, [i for i in listdir(history_folder) if i.endswith('.default')][0], "places.sqlite")
+    print("Profiles available:\n\tDefault")
+    i = 1
+    profiles = ["0",""]
+    while path.exists(path.join(history_folder, "/" + str(i))):
+        print("\tProfile ", i)
+        profiles.append(str(i))
+        i += 1
+    prof = " "
+    while prof not in profiles:
+        prof = input("Enter profile number (0 for default): ")
+    start = time()
+    if prof == "0" or prof == "": prof = "Default"
+    else: prof = "Profile " + prof
+    history_path = path.join(history_folder, prof, "History")
 
 elif browser.startswith('s'):
     start = time()
