@@ -44,27 +44,24 @@ if browser.startswith('c'):
 elif browser.startswith('f'):
     start = time()
     if platform.startswith("win"):
-        history_folder = path.join(Path.home(),"AppData\\Roaming\\Mozilla\\Firefox\\Profiles")
+        profilePath = "AppData\\Roaming\\Mozilla\\Firefox\\Profiles"
+        history_folder = path.join(Path.home(), profilePath)
+
+        print("Profiles available are: ")
+        listdir(profilePath)
     elif platform=="linux":
         history_folder = path.join(Path.home(), ".mozilla/firefox")
     elif platform=="darwin":
-        history_folder = path.join(Path.home(), "Library/Application Support/Firefox/Profiles")
+        profilePath = "../../../../Library/Application Support/Firefox/Profiles/"
+        history_folder = path.join(Path.home(), profilePath)
+
+        print("Profiles available are: ")
+        print(listdir(profilePath))
     else:
         print("Unsupported OS")
         quit()
-    print("Profiles available:\n\tDefault")
-    i = 1
-    profiles = ["0",""]
-    while path.exists(path.join(history_folder, "/" + str(i))):
-        print("\tProfile ", i)
-        profiles.append(str(i))
-        i += 1
-    prof = " "
-    while prof not in profiles:
-        prof = input("Enter profile number (0 for default): ")
-    start = time()
-    if prof == "0" or prof == "": prof = "Default"
-    else: prof = "Profile " + prof
+
+    prof = input("Enter the profile from the above listed profiles: ")
     history_path = path.join(history_folder, prof, "History")
 
 elif browser.startswith('s'):
