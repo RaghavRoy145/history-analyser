@@ -4,6 +4,7 @@ from sys import platform
 from os import path, mkdir, listdir
 from pathlib import Path
 from numpy import nan
+import re
 
 browser = ""
 if platform != "darwin":
@@ -52,11 +53,19 @@ elif browser.startswith('f'):
     elif platform=="linux":
         history_folder = path.join(Path.home(), ".mozilla/firefox")
     elif platform=="darwin":
-        profilePath = "../../../../Library/Application Support/Firefox/Profiles/"
+        profilePath = path.join(Path.home(), "Library/Application Support/Firefox/Profiles/")
         history_folder = path.join(Path.home(), profilePath)
 
         print("Profiles available are: ")
-        print(listdir(profilePath))
+        lis = list(listdir(profilePath))
+        dirList = []
+        for i in lis:
+            for f in listdir(path.join(profilePath, i)):
+                if f.endswith(".sqlite"):
+                    if i not in dirList:
+                        dirList.append(i)
+        print(dirList)            
+
     else:
         print("Unsupported OS")
         quit()
