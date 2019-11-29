@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/Samyak2/history-analyser.svg?branch=master)](https://travis-ci.org/Samyak2/history-analyser)
 # Web Browser History Analyser
 
 ## Requirements
