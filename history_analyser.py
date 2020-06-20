@@ -4,6 +4,7 @@ from sys import platform
 from os import path, mkdir, listdir
 from pathlib import Path
 from numpy import nan
+import re
 
 browser = ""
 if platform != "darwin":
@@ -44,15 +45,30 @@ if browser.startswith('c'):
 elif browser.startswith('f'):
     start = time()
     if platform.startswith("win"):
-        history_folder = path.join(Path.home(),"AppData\\Roaming\\Mozilla\\Firefox\\Profiles")
+        profilePath = "AppData\\Roaming\\Mozilla\\Firefox\\Profiles"
+        history_folder = path.join(Path.home(), profilePath)
     elif platform=="linux":
         history_folder = path.join(Path.home(), ".mozilla/firefox")
     elif platform=="darwin":
-        history_folder = path.join(Path.home(), "Library/Application Support/Firefox/Profiles")
+        profilePath = path.join(Path.home(), "Library/Application Support/Firefox/Profiles/")
+        history_folder = path.join(Path.home(), profilePath)
     else:
         print("Unsupported OS")
         quit()
-    history_path = path.join(history_folder, [i for i in listdir(history_folder) if i.endswith('.default')][0], "places.sqlite")
+
+    print("Profiles available are: ")
+    candidate_profs = list(listdir(history_folder))
+    profile_dirs = []
+    for candidate_prof in candidate_profs:
+        if path.isdir(path.join(history_folder, candidate_prof)):
+            filenames = listdir(path.join(history_folder, candidate_prof))
+            if "places.sqlite" in filenames:
+                profile_dirs.append(candidate_prof)
+                print(f"\t{len(profile_dirs)}: {candidate_prof}")
+    prof = "-1"
+    while int(prof) > len(profile_dirs) or int(prof) <= 0:
+        prof = input("Enter the profile number from the above listed profiles: ")
+    history_path = path.join(history_folder, profile_dirs[int(prof)-1], "places.sqlite")
 
 elif browser.startswith('s'):
     start = time()
