@@ -47,31 +47,28 @@ elif browser.startswith('f'):
     if platform.startswith("win"):
         profilePath = "AppData\\Roaming\\Mozilla\\Firefox\\Profiles"
         history_folder = path.join(Path.home(), profilePath)
-
-        print("Profiles available are: ")
-        listdir(profilePath)
     elif platform=="linux":
         history_folder = path.join(Path.home(), ".mozilla/firefox")
     elif platform=="darwin":
         profilePath = path.join(Path.home(), "Library/Application Support/Firefox/Profiles/")
         history_folder = path.join(Path.home(), profilePath)
-
-        print("Profiles available are: ")
-        lis = list(listdir(profilePath))
-        dirList = []
-        for i in lis:
-            for f in listdir(path.join(profilePath, i)):
-                if f.endswith(".sqlite"):
-                    if i not in dirList:
-                        dirList.append(i)
-        print(dirList)            
-
     else:
         print("Unsupported OS")
         quit()
 
-    prof = input("Enter the profile from the above listed profiles: ")
-    history_path = path.join(history_folder, prof, "History")
+    print("Profiles available are: ")
+    candidate_profs = list(listdir(history_folder))
+    profile_dirs = []
+    for candidate_prof in candidate_profs:
+        if path.isdir(path.join(history_folder, candidate_prof)):
+            filenames = listdir(path.join(history_folder, candidate_prof))
+            if "places.sqlite" in filenames:
+                profile_dirs.append(candidate_prof)
+                print(f"\t{len(profile_dirs)}: {candidate_prof}")
+    prof = "-1"
+    while int(prof) > len(profile_dirs) or int(prof) <= 0:
+        prof = input("Enter the profile number from the above listed profiles: ")
+    history_path = path.join(history_folder, profile_dirs[int(prof)-1], "places.sqlite")
 
 elif browser.startswith('s'):
     start = time()
