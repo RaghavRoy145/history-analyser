@@ -1,3 +1,7 @@
+# ARCHIVED: This project is now archived and will not be updated.
+
+Check out [pesos/browser-history](https://github.com/pesos/browser-history) if you're looking for a well maintained python package to extract browser history.
+
 [![Build Status](https://travis-ci.org/Samyak2/history-analyser.svg?branch=master)](https://travis-ci.org/Samyak2/history-analyser)
 # Web Browser History Analyser
 
